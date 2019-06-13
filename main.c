@@ -71,6 +71,9 @@ u32				g_FlowIndexDepth	= 6;				// number of parallel flow index structures to a
 u64				g_FlowMax			= 250e3;			// maximum number of flows per snapshot
 bool			g_FlowTopNEnable	= false;			// enable or disable output the top N flows
 u32				g_FlowTopNMax		= 1000;				// number of top flow to output
+u8				g_FlowTopNMac		= 0;				// count of topN flows for particuar MAC address
+u8				g_FlowTopNsMac[MAX_TOPN_MAC][6];				// topN source MAC
+u8				g_FlowTopNdMac[MAX_TOPN_MAC][6];				// topN destination MAC
 
 bool			g_Output_NULL		= false;			// benchmarking mode output to /dev/null 
 bool			g_Output_STDOUT		= true;				// by default output to stdout 
@@ -335,7 +338,36 @@ static bool ParseCommandLine(u8* argv[])
 	{
 		g_FlowTopNEnable	= true;
 		g_FlowTopNMax 		= atof(argv[1]);
-		fprintf(stderr, "  Flow Top-N max:%i\n", g_FlowMax);
+		fprintf(stderr, "  Flow Top-N max:%i\n", g_FlowTopNMax);
+		cnt	+= 2;
+	}
+	// output top-N based on source/destination MAC
+	if (strcmp(argv[0], "--flow-top-n-circuit") == 0)
+	{
+		if (g_FlowTopNMac == MAX_TOPN_MAC)
+		{
+			fprintf(stderr, "  Error: max --flow-top-n-circuit limit(%d) reached !\n", MAX_TOPN_MAC);
+		}
+		else
+		{
+			int ret = sscanf(argv[1], MAC_FMT"_"MAC_FMT,
+					&g_FlowTopNsMac[g_FlowTopNMac][0], &g_FlowTopNsMac[g_FlowTopNMac][1], &g_FlowTopNsMac[g_FlowTopNMac][2],
+					&g_FlowTopNsMac[g_FlowTopNMac][3], &g_FlowTopNsMac[g_FlowTopNMac][4], &g_FlowTopNsMac[g_FlowTopNMac][5],
+					&g_FlowTopNdMac[g_FlowTopNMac][0], &g_FlowTopNdMac[g_FlowTopNMac][1], &g_FlowTopNdMac[g_FlowTopNMac][2],
+					&g_FlowTopNdMac[g_FlowTopNMac][3], &g_FlowTopNdMac[g_FlowTopNMac][4], &g_FlowTopNdMac[g_FlowTopNMac][5]);
+			if (ret == 12)
+			{
+				fprintf(stderr, "  g_FlowTopNMac: %d\n"\
+								"  src mac: " MAC_FMT "\n"\
+								"  dst mac: " MAC_FMT "\n",
+					g_FlowTopNMac+1, MAC_PRINT(g_FlowTopNsMac[g_FlowTopNMac]), MAC_PRINT(g_FlowTopNdMac[g_FlowTopNMac]));
+				g_FlowTopNMac++;
+			}
+			else
+			{
+				fprintf(stderr, "  Error while parsing \"--flow-top-n-circuit SMAC_DMAC\" config option\n");
+			}
+		}
 		cnt	+= 2;
 	}
 	// flow null 
