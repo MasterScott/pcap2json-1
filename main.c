@@ -140,7 +140,9 @@ static void help(void)
 	fprintf(stderr, " --flow-index-depth <number>    : number of root flow index to allocate defulat 6\n");
 	fprintf(stderr, " --flow-max   <number>          : maximum number of flows (default 250e3)6\n");
 	fprintf(stderr, " --flow-top-n <number>          : only output the top N flows\n"); 
+	fprintf(stderr, " --flow-top-n-circuit <dMAC_dMAC> : output top N flows based on specified src/dest MAC\n"); 
 
+	fprintf(stderr, "\n");
 	fprintf(stderr, "Elastic Stack options\n");
 	fprintf(stderr, " --es-host <hostname:port>      : Sets the ES Hostname\n");
 	fprintf(stderr, " --es-compress                  : enables gzip compressed POST\n");
